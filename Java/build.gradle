@@ -1,0 +1,40 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+        resources {
+            // srcDir ''
+        }
+    }
+}
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+libsDirName = './bin'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'open-airplay',
+                'Implementation-Version': version,
+                'Main-Class': 'com.jameslow.AirPlay'
+    }
+    doFirst {
+        from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
+    }
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'javax.jmdns:jmdns:3.4.1'
+
+}
