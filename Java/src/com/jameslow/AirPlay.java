@@ -25,7 +25,7 @@ public class AirPlay {
 	public static final int APPLETV_WIDTH = 1280;
 	public static final int APPLETV_HEIGHT = 720;
 	public static final float APPLETV_ASPECT = (float) APPLETV_WIDTH/APPLETV_HEIGHT;
-	
+
 	protected String hostname;
 	protected String name;
 	protected int port;
@@ -37,7 +37,8 @@ public class AirPlay {
 	protected int appletv_width = APPLETV_WIDTH;
 	protected int appletv_height = APPLETV_HEIGHT;
 	protected float appletv_aspect = APPLETV_ASPECT;
-	
+
+
 	//AirPlay class
 	public AirPlay(Service service) {
 		this(service.hostname,service.port,service.name);
@@ -274,33 +275,36 @@ public class AirPlay {
 		 */
 		doHTTP("PUT", "/photo", os, headers);
 	}
-	public static BufferedImage captureScreen() throws AWTException {
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		Dimension dim = tk.getScreenSize();
-		Rectangle rect = new Rectangle(dim);
-		Robot robot = new Robot();
-		BufferedImage image = robot.createScreenCapture(rect);		
-		return image;
-	}
-	
+
 	public class PhotoThread extends Thread {
 		private final AirPlay airplay;
-		private BufferedImage image = null;
+        private ScreenCapture sc;
+        private BufferedImage image = null;
 		private int timeout = 5000;
-		
+
 		public PhotoThread(AirPlay airplay) {
 			this(airplay,null,1000);
-		}
+            try {
+                sc = new ScreenCapture();
+            } catch (AWTException e) {
+                e.printStackTrace();
+            }
+        }
 		public PhotoThread(AirPlay airplay, BufferedImage image, int timeout) {
 			this.airplay = airplay;
 			this.image = image;
 			this.timeout = timeout;
-		}
+            try {
+                sc = new ScreenCapture();
+            } catch (AWTException e) {
+                e.printStackTrace();
+            }
+        }
 		public void run() {
 			while (!Thread.interrupted()) {
 				try {
 					if (image == null) {
-						BufferedImage frame = airplay.scaleImage(AirPlay.captureScreen());
+						BufferedImage frame = airplay.scaleImage(sc.getNextFrame());
 						airplay.photoRawCompress(frame, NONE);
 					} else {
 						airplay.photoRaw(image,NONE);
@@ -576,4 +580,35 @@ public class AirPlay {
 			e.printStackTrace();
 		}
 	}
+
+    class ScreenCapture {
+
+        private final BufferedImage blackSquare;
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        Dimension dim = tk.getScreenSize();
+        Rectangle rect = new Rectangle(dim);
+        Robot robot;
+
+        public ScreenCapture() throws AWTException {
+            blackSquare = new BufferedImage(25, 25, BufferedImage.TYPE_3BYTE_BGR);
+            for(int i = 0; i < blackSquare.getHeight(); i++){
+                for(int j = 0; j < blackSquare.getWidth(); j++){
+                    blackSquare.setRGB(j, i, 128);
+                }
+            }
+            robot = new Robot();
+        }
+
+
+        public BufferedImage getNextFrame() {
+
+            BufferedImage image = robot.createScreenCapture(rect);
+            PointerInfo pointer = MouseInfo.getPointerInfo();
+            int x = (int) pointer.getLocation().getX();
+            int y = (int) pointer.getLocation().getY();
+            image.getGraphics().drawImage(blackSquare, x, y, null);
+
+            return image;
+        }
+    }
 }
