@@ -1,3 +1,6 @@
+
+[![Build Status](https://travis-ci.org/sylvain121/open-airplay.svg?branch=master)](https://travis-ci.org/sylvain121/open-airplay)
+
 open-airplay
 ============
 
@@ -8,12 +11,11 @@ Examples
 The library can be used by another application, but it can also be used for some basic tasks from the command line or directly (by double clicking):
 Send a photo:
 ```
-php airplay.php -h hostname[:port] -p file
+
 java -jar airplay.jar -h hostname[:port] [-a password] -p file
 ```
 Stream desktop:
 ```
-php airplay.php -h hostname[:port] -d (mac only)
 java -jar airplay.jar -h hostname[:port] [-a password] -d
 ```
 
